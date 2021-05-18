@@ -1,5 +1,6 @@
 package com.udacity.jwdnd.course1.cloudstorage.controller;
 
+import com.udacity.jwdnd.course1.cloudstorage.constants.Constants;
 import com.udacity.jwdnd.course1.cloudstorage.model.Credential;
 import com.udacity.jwdnd.course1.cloudstorage.model.Note;
 import com.udacity.jwdnd.course1.cloudstorage.services.CredentialService;
@@ -30,7 +31,14 @@ public class CredentialController {
                          RedirectAttributes redirectAttributes) {
         Integer userId = userService.getUser(auth.getName()).getUserId();
 
+        Credential credential1 = credentialService.retrieveByUserName(credential.getUsername());
 
+        if (credential1 != null) {
+            redirectAttributes.addAttribute("success", true);
+            redirectAttributes.addAttribute("message",
+                    Constants.EXISTING_USER_ERROR);
+            return "redirect:/home";
+        }
         try {
             if (credential.getCredentialId() == null) {
                 credential.setUserid(userId);
@@ -38,18 +46,17 @@ public class CredentialController {
                 redirectAttributes.addAttribute("success", true);
 
                 redirectAttributes.addAttribute("message",
-                        "Credential create ".concat(credential.getUsername()));
+                        Constants.CREDENTIAL_SUCCESSFULLY_CREATED);
             } else {
                 credentialService.update(credential);
                 redirectAttributes.addAttribute("success", true);
 
-                redirectAttributes.addAttribute("message",
-                        "Credential  was edited ".concat(credential.getUsername()));
+                redirectAttributes.addAttribute("message", Constants.CREDENTIAL_SUCCESSFULLY_EDITED);
             }
         } catch (Exception e) {
             redirectAttributes.addAttribute("error", true);
 
-            redirectAttributes.addAttribute("message", e.getMessage());
+            redirectAttributes.addAttribute("message", Constants.UNESPECTED_ERROR);
             System.out.println(e.getMessage());
         }
         return "redirect:/home";
@@ -65,13 +72,13 @@ public class CredentialController {
             credentialService.delete(credential.getCredentialId());
             redirectAttributes.addAttribute("success", true);
             redirectAttributes.addAttribute("message",
-                    "CredentialId deleted ".concat(username));
+                    Constants.CREDENTIAL_SUCCESSFULLY_DELETED);
 
         } catch (Exception e) {
             redirectAttributes.addAttribute("error", true);
 
             redirectAttributes.addAttribute("message",
-                    "Unexpected error deleting the file ".concat(username));
+                    Constants.UNESPECTED_ERROR);
         }
         return "redirect:/home";
 

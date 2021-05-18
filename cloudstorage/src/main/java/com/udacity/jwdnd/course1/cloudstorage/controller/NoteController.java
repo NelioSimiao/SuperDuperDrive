@@ -1,5 +1,6 @@
 package com.udacity.jwdnd.course1.cloudstorage.controller;
 
+import com.udacity.jwdnd.course1.cloudstorage.constants.Constants;
 import com.udacity.jwdnd.course1.cloudstorage.model.Note;
 import com.udacity.jwdnd.course1.cloudstorage.services.NoteService;
 import com.udacity.jwdnd.course1.cloudstorage.services.UserService;
@@ -29,27 +30,43 @@ public class NoteController {
     @PostMapping("home/notes")
     public String create(@ModelAttribute Note note, Authentication auth,
                          RedirectAttributes redirectAttributes) {
-        Integer userId = userService.getUser(auth.getName()).getUserId();
-        note.setUserId(userId);
+        note.setUserId(userService.getUser(auth.getName()).getUserId());
+       if( noteService.isNoteNameAvailable(note.getNoteDescription())){
+           redirectAttributes.addAttribute("success", true);
+           redirectAttributes.addAttribute("message", Constants.NOTE_WITH_SAME_DESCRIPTION_ALREADY_EXISTS);
+           return "redirect:/home";
+       }
 
         try {
-            if (note.getNoteId() == null) {
-                noteService.create(note);
-                redirectAttributes.addAttribute("success", true);
-
-                redirectAttributes.addAttribute("message",
-                        "Note create ".concat(note.getNoteTitle()));
-            } else {
-                noteService.update(note);
-                redirectAttributes.addAttribute("success", true);
-
-                redirectAttributes.addAttribute("message",
-                        "Note  was edited ".concat(note.getNoteTitle()));
-            }
+            noteService.create(note);
+            redirectAttributes.addAttribute("success", true);
+            redirectAttributes.addAttribute("message", Constants.NOTE_SUCCESSFULLY_CREATED);
         } catch (Exception e) {
             redirectAttributes.addAttribute("error", true);
+            redirectAttributes.addAttribute("messageError", Constants.UNESPECTED_ERROR);
+            System.out.println(e.getMessage());
 
-            redirectAttributes.addAttribute("messageError", e.getMessage());
+        }
+        return "redirect:/home";
+    }
+
+    @PostMapping("home/notes/edit")
+    public String edit(@ModelAttribute Note note, Authentication auth,
+                       RedirectAttributes redirectAttributes) {
+
+        if( noteService.isNoteNameAvailable(note.getNoteDescription())){
+            redirectAttributes.addAttribute("success", true);
+            redirectAttributes.addAttribute("message", Constants.NOTE_WITH_SAME_DESCRIPTION_ALREADY_EXISTS);
+            return "redirect:/home";
+        }
+        try {
+            noteService.update(note);
+            redirectAttributes.addAttribute("success", true);
+            redirectAttributes.addAttribute("message", Constants.NOTE_SUCCESSFULLY_EDITED);
+        } catch (Exception e) {
+            redirectAttributes.addAttribute("error", true);
+            redirectAttributes.addAttribute("messageError", Constants.UNESPECTED_ERROR);
+            System.out.println(e.getMessage());
         }
         return "redirect:/home";
     }
@@ -63,13 +80,13 @@ public class NoteController {
             redirectAttributes.addAttribute("success", true);
 
             redirectAttributes.addAttribute("message",
-                    "Note deleted ".concat(title));
+                    Constants.NOTE_SUCCESSFULLY_DELETED);
 
         } catch (Exception e) {
             redirectAttributes.addAttribute("error", true);
 
             redirectAttributes.addAttribute("messageError",
-                    "Unexpected error deleting the file ".concat(title));
+                    Constants.UNESPECTED_ERROR);
         }
         return "redirect:/home";
 

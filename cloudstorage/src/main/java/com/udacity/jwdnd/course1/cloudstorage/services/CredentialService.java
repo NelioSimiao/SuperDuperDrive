@@ -57,5 +57,9 @@ public class CredentialService {
         return this.credentialMapper.retrieveKeyByCredentialId(credentialId);
     }
 
+    public Credential retrieveByUserName(String username) {
+        return this.credentialMapper.retrieveByUserName(username);
+    }
+
 
 }

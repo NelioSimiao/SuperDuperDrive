@@ -30,5 +30,8 @@ public interface CredentialMapper {
     @Select("SELECT * FROM CREDENTIALS WHERE credentialid = #{credentialId}")
     Credential retrieveKeyByCredentialId(Integer credentialId);
 
+    @Select("SELECT * FROM CREDENTIALS WHERE username = #{username}")
+    Credential retrieveByUserName(String username);
+
 
 }
