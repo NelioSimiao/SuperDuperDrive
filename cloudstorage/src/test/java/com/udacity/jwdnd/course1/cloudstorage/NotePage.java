@@ -38,10 +38,8 @@ public class NotePage {
     @FindBy(id = "note-deleteBtn")
     private WebElement deleteNoteBtn;
 
-    @FindBy(id = "success-message")
+    @FindBy(id = "success-message2")
     private WebElement successMessage;
-
-
 
 
     private WebDriver driver;
@@ -64,6 +62,7 @@ public class NotePage {
     public void clickAddNoteBtn() {
         addNoteBtn.click();
     }
+
 
     public void clickSaveEditNoteBtn() {
         this.saveEditNoteButton.click();

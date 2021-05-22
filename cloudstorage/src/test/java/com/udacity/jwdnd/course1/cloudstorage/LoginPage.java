@@ -15,6 +15,10 @@ public class LoginPage {
     @FindBy(id="loginId")
     private WebElement loginButton;
 
+    @FindBy(id = "logoutId")
+    private WebElement logoutBtn;
+
+
     private WebDriver webDriver;
 
 
@@ -30,5 +34,11 @@ public class LoginPage {
     public void clickLoginButton(){
         loginButton.click();
     }
+
+
+    public void clicklogoutBtn() {
+        logoutBtn.click();
+    }
+
 
 }

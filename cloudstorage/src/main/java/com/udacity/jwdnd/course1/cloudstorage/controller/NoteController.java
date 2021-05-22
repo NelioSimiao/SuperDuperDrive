@@ -43,8 +43,7 @@ public class NoteController {
             redirectAttributes.addAttribute("message", Constants.NOTE_SUCCESSFULLY_CREATED);
         } catch (Exception e) {
             redirectAttributes.addAttribute("error", true);
-            redirectAttributes.addAttribute("messageError", Constants.UNESPECTED_ERROR);
-            System.out.println(e.getMessage());
+            redirectAttributes.addAttribute("message", Constants.UNESPECTED_ERROR);
 
         }
         return "redirect:/home";
@@ -60,13 +59,14 @@ public class NoteController {
             return "redirect:/home";
         }
         try {
+
+            note.setUserId(userService.getUser(auth.getName()).getUserId());
             noteService.update(note);
             redirectAttributes.addAttribute("success", true);
             redirectAttributes.addAttribute("message", Constants.NOTE_SUCCESSFULLY_EDITED);
         } catch (Exception e) {
             redirectAttributes.addAttribute("error", true);
-            redirectAttributes.addAttribute("messageError", Constants.UNESPECTED_ERROR);
-            System.out.println(e.getMessage());
+            redirectAttributes.addAttribute("message", Constants.UNESPECTED_ERROR);
         }
         return "redirect:/home";
     }
@@ -85,7 +85,7 @@ public class NoteController {
         } catch (Exception e) {
             redirectAttributes.addAttribute("error", true);
 
-            redirectAttributes.addAttribute("messageError",
+            redirectAttributes.addAttribute("message",
                     Constants.UNESPECTED_ERROR);
         }
         return "redirect:/home";

@@ -25,7 +25,7 @@ public class Constants {
     public static final  String CREDENTIAL_SUCCESSFULLY_DELETED= "Credential was successfully deleted !";
 
 
-    public static final  String UNESPECTED_ERROR = "Unespected Error !";
+    public static final  String UNESPECTED_ERROR = "Unespected Error please contact your system administrator !";
 
 
 

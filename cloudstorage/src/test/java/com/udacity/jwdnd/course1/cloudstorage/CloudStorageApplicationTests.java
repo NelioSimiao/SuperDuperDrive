@@ -7,13 +7,19 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.nio.charset.Charset;
+import java.util.Random;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@AutoConfigureTestDatabase()
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class CloudStorageApplicationTests {
 
     @LocalServerPort
@@ -39,7 +45,6 @@ class CloudStorageApplicationTests {
         if (this.driver != null) {
             Thread.sleep(3000);
             driver.quit();
-            //driver=null;
         }
     }
 
@@ -51,8 +56,6 @@ class CloudStorageApplicationTests {
         loginPage.fillLogin("Nel", "0123");
         loginPage.clickLoginButton();
         Assertions.assertEquals("Login", driver.getTitle());
-
-
     }
 
     @Test
@@ -64,29 +67,30 @@ class CloudStorageApplicationTests {
         Thread.sleep(2000);
         loginPage.clickLoginButton();
         Thread.sleep(2000);
-
         new WebDriverWait(driver, 4).until(ExpectedConditions.titleIs("Login"));
-
         Assertions.assertEquals("Login", driver.getTitle());
     }
 
-
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     @Order(3)
-    public void testSignUpUser() {
+    public void testSignUpUser() throws InterruptedException {
+        testLogoutUser();
         driver.get(baseURL + "/signup");
+        Thread.sleep(2000);
         SignUpPage signUpPage = new SignUpPage(driver);
         signUpPage.fillSignUp("Neylon", "Muteu", "Nel", "0123");
+        Thread.sleep(2000);
         signUpPage.clickSignUpButton();
-        Assertions.assertEquals("Sign Up", driver.getTitle());
+        Thread.sleep(2000);
+        Assertions.assertEquals("Login", driver.getTitle());
 
     }
 
     @Test
     @Order(4)
     public void testLogoutUser() throws InterruptedException {
-        driver.get(baseURL + "/login");
-
+        driver.get(baseURL + "/logout");
         Assertions.assertEquals("Login", driver.getTitle());
     }
 
@@ -99,21 +103,17 @@ class CloudStorageApplicationTests {
         loginPage.fillLogin("Nel", "0123");
         loginPage.clickLoginButton();
         Thread.sleep(2000);
-
         Assertions.assertEquals("Home", driver.getTitle());
         Thread.sleep(3000);
         HomePage homePage = new HomePage(driver);
         homePage.clickLogoutButton();
         Thread.sleep(3000);
         Assertions.assertEquals("Login", driver.getTitle());
-
-
     }
-
 
     @Test
     @Order(6)
-    public void testNotesCreateEditDeleteAndList() throws InterruptedException {
+    public void testCreateNotesAndVerifyIsDisplayed() throws InterruptedException {
         login();
         driver.get(baseURL + "/home");
         NotePage notePage = new NotePage(driver);
@@ -121,25 +121,41 @@ class CloudStorageApplicationTests {
         Thread.sleep(2000);
         notePage.clickAddNoteBtn();
         Thread.sleep(2000);
-        notePage.addNote("glass","Teste the glas");
+        notePage.addNote("glass", "Teste the glas");
         Thread.sleep(2000);
         notePage.clickSaveEditNoteBtn();
         Thread.sleep(2000);
-        notePage.clickEditBtn();
-        Thread.sleep(2000);
-        notePage.editNote("glass Edited","Teste the glas");
-        Thread.sleep(2000);
-        notePage.noteEditSubmitBtn();
-        Thread.sleep(2000);
-        notePage.clickDeleteNoteBtn();
-
         Assertions.assertTrue(notePage.getSuccessMessage());
-
-
     }
 
     @Test
-    @Order(6)
+    @Order(7)
+    public void testEditNotesAndVerifyIsDisplayed() throws InterruptedException {
+        testCreateNotesAndVerifyIsDisplayed();
+        NotePage notePage = new NotePage(driver);
+        notePage.clickEditBtn();
+        Thread.sleep(2000);
+        notePage.editNote("glass Edited", "Teste the glas");
+        Thread.sleep(2000);
+        notePage.noteEditSubmitBtn();
+        Thread.sleep(2000);
+        Assertions.assertTrue(notePage.getSuccessMessage());
+    }
+
+    @Test
+    @Order(8)
+    public void testDeleteNotesAndVerifyIsDisplayed() throws InterruptedException {
+        testCreateNotesAndVerifyIsDisplayed();
+        NotePage notePage = new NotePage(driver);
+        Thread.sleep(2000);
+        notePage.clickDeleteNoteBtn();
+        Thread.sleep(2000);
+        Assertions.assertTrue(notePage.getSuccessMessage());
+    }
+
+
+    @Test
+    @Order(9)
     public CredentialPage testCreateCredentialAndList() throws InterruptedException {
         login();
         driver.get(baseURL + "/home");
@@ -148,7 +164,7 @@ class CloudStorageApplicationTests {
         Thread.sleep(2000);
         credentialPage.clickAddCredBtn();
         Thread.sleep(2000);
-        credentialPage.fillCredential("https://classroom.udacity.com/nanodegrees/","Nelio","0123");
+        credentialPage.fillCredential("https://classroom.udacity.com/nanodegrees/", "Nelio", "0123");
         Thread.sleep(2000);
         credentialPage.saveCredBtn();
         Assertions.assertTrue(credentialPage.getSuccessMessage());
@@ -157,19 +173,26 @@ class CloudStorageApplicationTests {
     }
 
     @Test
-    @Order(7)
-    public void testEditCredentialAndDelete() throws InterruptedException {
+    @Order(10)
+    public void testEditCredential() throws InterruptedException {
         CredentialPage cre = testCreateCredentialAndList();
         Thread.sleep(2000);
         cre.clickEditBtn();
-        Thread.sleep(2000);
-        cre.saveCredBtn();
+        Assertions.assertFalse(cre.getSuccessMessage());
+
+    }
+
+    @Test
+    @Order(10)
+    public void testDeleteCredential() throws InterruptedException {
+        CredentialPage cre = testCreateCredentialAndList();
         Thread.sleep(2000);
         cre.clickDeleteBtn();
         Thread.sleep(2000);
         Assertions.assertFalse(cre.getSuccessMessage());
 
     }
+
 
     public WebDriver login() throws InterruptedException {
         testSignUpUser();
@@ -181,6 +204,7 @@ class CloudStorageApplicationTests {
         return driver;
 
     }
+
 
 
 }
